@@ -1,0 +1,11 @@
+{
+  "name": "holdem-mobile",
+  "version": "1.0.0",
+  "description": "Mobile-friendly No-Limit Texas Hold'em against AI opponents. Zero dependencies, runs in any modern browser.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes http-server . -p 8080 -c-1",
+    "test": "node --test tests/*.test.js"
+  }
+}

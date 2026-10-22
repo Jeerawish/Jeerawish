@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Hold'em — Texas Hold'em Poker</title>
+    <meta name="description" content="Play No-Limit Texas Hold'em against smart AI opponents. Mobile-friendly, works offline, no sign-up." />
+    <meta name="theme-color" content="#06120d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Hold'em" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- ============================================================ Lobby -->
+      <section id="lobby" class="screen screen--lobby" aria-label="Lobby">
+        <div class="lobby">
+          <header class="brand">
+            <div class="brand__fan" id="brand-fan" aria-hidden="true"></div>
+            <h1>Texas Hold'em</h1>
+            <p>No-Limit · Sit &amp; Go against smart AI</p>
+          </header>
+
+          <div class="lobby__actions" id="continue-wrap" hidden>
+            <button class="btn btn--primary btn--lg btn--block" id="btn-continue">
+              Continue game <span class="num" id="continue-info"></span>
+            </button>
+          </div>
+
+          <form class="panel" id="setup-form" autocomplete="off">
+            <label class="field">
+              <span class="field__label">Your name</span>
+              <input class="text-input" id="player-name" maxlength="14" placeholder="You" enterkeyhint="done" />
+            </label>
+
+            <div class="field">
+              <span class="field__label" id="lbl-opponents">Opponents</span>
+              <div class="segmented" role="radiogroup" aria-labelledby="lbl-opponents" data-setting="opponents">
+                <button type="button" role="radio" data-value="1">1</button>
+                <button type="button" role="radio" data-value="2">2</button>
+                <button type="button" role="radio" data-value="3">3</button>
+                <button type="button" role="radio" data-value="4">4</button>
+                <button type="button" role="radio" data-value="5">5</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field__label" id="lbl-difficulty">Difficulty</span>
+              <div class="segmented" role="radiogroup" aria-labelledby="lbl-difficulty" data-setting="difficulty">
+                <button type="button" role="radio" data-value="easy">Easy</button>
+                <button type="button" role="radio" data-value="normal">Normal</button>
+                <button type="button" role="radio" data-value="hard">Hard</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field__label" id="lbl-stack">Starting stack <span class="field__hint" id="stack-hint"></span></span>
+              <div class="segmented" role="radiogroup" aria-labelledby="lbl-stack" data-setting="stack">
+                <button type="button" role="radio" data-value="1000">50 BB</button>
+                <button type="button" role="radio" data-value="2000">100 BB</button>
+                <button type="button" role="radio" data-value="4000">200 BB</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field__label" id="lbl-blinds">Blinds increase <span class="field__hint" id="blinds-hint"></span></span>
+              <div class="segmented" role="radiogroup" aria-labelledby="lbl-blinds" data-setting="blindSpeed">
+                <button type="button" role="radio" data-value="0">Never</button>
+                <button type="button" role="radio" data-value="15">Slow</button>
+                <button type="button" role="radio" data-value="10">Normal</button>
+                <button type="button" role="radio" data-value="6">Turbo</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="lobby__actions">
+            <button class="btn btn--primary btn--lg btn--block" id="btn-start">Deal me in</button>
+          </div>
+
+          <nav class="lobby__links" aria-label="More">
+            <button class="link-btn" data-open="dlg-rules">How to play</button>
+            <button class="link-btn" data-open="dlg-stats">Statistics</button>
+            <button class="link-btn" data-open="dlg-settings">Settings</button>
+          </nav>
+        </div>
+      </section>
+
+      <!-- ============================================================ Game -->
+      <section id="game" class="screen screen--game" aria-label="Poker table" hidden>
+        <header class="topbar">
+          <button class="icon-btn" id="btn-menu" aria-label="Menu" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+          <div class="topbar__info">
+            <div class="topbar__blinds num" id="blinds-label">Blinds 10/20</div>
+            <div class="topbar__level num" id="level-label">Hand 1</div>
+          </div>
+          <button class="icon-btn" id="btn-history" aria-label="Hand history" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 4v4h4" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+          </button>
+          <button class="icon-btn" id="btn-sound" aria-label="Sound" aria-pressed="true">
+            <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5 6 9H3v6h3l5 4z" />
+              <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+            </svg>
+            <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5 6 9H3v6h3l5 4z" />
+              <path d="m16 9 6 6M22 9l-6 6" />
+            </svg>
+          </button>
+        </header>
+
+        <main class="table-wrap" id="table-wrap">
+          <div class="table" id="table">
+            <div class="felt" id="felt">
+              <div class="pot pot--empty" id="pot">
+                <div class="pot__pill">
+                  <span class="chips" id="pot-chips"></span>
+                  <span class="pot__label">Pot</span>
+                  <span class="num" id="pot-amount">0</span>
+                </div>
+                <div class="side-pots num" id="side-pots"></div>
+              </div>
+              <div class="board" id="board" aria-label="Community cards"></div>
+              <div class="felt__logo" aria-hidden="true">TEXAS HOLD'EM</div>
+              <div class="table-message" id="table-message" role="status" aria-live="polite"></div>
+            </div>
+            <div id="seats"></div>
+            <div class="dealer-btn" id="dealer-btn" aria-hidden="true">D</div>
+            <div class="fx" id="fx" aria-hidden="true"></div>
+          </div>
+        </main>
+
+        <footer class="controls is-idle" id="controls">
+          <div class="hero-info" id="hero-info" aria-live="polite">
+            <span class="hero-info__hand" id="hero-hand"></span>
+            <span class="hero-info__odds num" id="hero-odds"></span>
+          </div>
+
+          <div class="raise-panel" id="raise-panel" hidden>
+            <div class="raise-panel__presets" id="raise-presets"></div>
+            <div class="raise-panel__row">
+              <button class="step-btn" id="raise-minus" aria-label="Decrease bet">−</button>
+              <input class="slider" id="raise-slider" type="range" aria-label="Bet amount" />
+              <button class="step-btn" id="raise-plus" aria-label="Increase bet">+</button>
+              <output class="raise-amount" id="raise-amount" for="raise-slider">0</output>
+            </div>
+          </div>
+
+          <div class="actions" id="actions">
+            <button class="act act--fold" id="act-fold">Fold</button>
+            <button class="act act--call" id="act-call">Check</button>
+            <button class="act act--raise" id="act-raise">Raise</button>
+          </div>
+
+          <div class="preactions" id="preactions">
+            <button class="pre" data-pre="checkfold" aria-pressed="false">Check / Fold</button>
+            <button class="pre" data-pre="callany" aria-pressed="false">Call Any</button>
+          </div>
+
+          <div class="status-line" id="status-line">
+            <span id="status-text">Shuffling up…</span>
+            <button class="btn btn--primary next-btn" id="btn-next" hidden>
+              Next hand<span class="next-btn__progress" id="next-progress"></span>
+            </button>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <!-- ============================================================ Dialogs -->
+    <dialog id="dlg-menu" aria-labelledby="menu-title">
+      <div class="dialog__head">
+        <h2 id="menu-title">Paused</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="dialog__body">
+        <div class="menu-list">
+          <button class="btn btn--primary btn--block" data-close>Resume</button>
+          <button class="btn btn--ghost btn--block" data-open="dlg-settings">⚙️&nbsp; Settings</button>
+          <button class="btn btn--ghost btn--block" data-open="dlg-rules">🃏&nbsp; Hand rankings &amp; rules</button>
+          <button class="btn btn--ghost btn--block" data-open="dlg-stats">📊&nbsp; Statistics</button>
+          <button class="btn btn--ghost btn--block" id="btn-restart">🔄&nbsp; Restart tournament</button>
+          <button class="btn btn--ghost btn--block" id="btn-lobby">🏠&nbsp; Back to lobby</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="dlg-settings" aria-labelledby="settings-title">
+      <div class="dialog__head">
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="dialog__body">
+        <div class="setting setting--stack">
+          <div class="setting__text">
+            <span id="lbl-speed">Game speed</span>
+            <small>How fast opponents act and cards are dealt</small>
+          </div>
+          <div class="segmented" role="radiogroup" aria-labelledby="lbl-speed" data-setting="speed">
+            <button type="button" role="radio" data-value="slow">Relaxed</button>
+            <button type="button" role="radio" data-value="normal">Normal</button>
+            <button type="button" role="radio" data-value="fast">Fast</button>
+            <button type="button" role="radio" data-value="turbo">Turbo</button>
+          </div>
+        </div>
+        <div class="setting">
+          <div class="setting__text"><span>Sound effects</span><small>Synthesized chips &amp; cards</small></div>
+          <button class="switch" role="switch" data-toggle="sound" aria-label="Sound effects"></button>
+        </div>
+        <div class="setting">
+          <div class="setting__text"><span>Vibration</span><small>Buzz when it's your turn (Android)</small></div>
+          <button class="switch" role="switch" data-toggle="haptics" aria-label="Vibration"></button>
+        </div>
+        <div class="setting">
+          <div class="setting__text"><span>Show win odds</span><small>Your chance vs. random hands</small></div>
+          <button class="switch" role="switch" data-toggle="showOdds" aria-label="Show win odds"></button>
+        </div>
+        <div class="setting">
+          <div class="setting__text"><span>Four-color deck</span><small>Blue diamonds, green clubs</small></div>
+          <button class="switch" role="switch" data-toggle="fourColor" aria-label="Four-color deck"></button>
+        </div>
+        <div class="setting">
+          <div class="setting__text"><span>Auto-deal next hand</span><small>Start the next hand automatically</small></div>
+          <button class="switch" role="switch" data-toggle="autoDeal" aria-label="Auto-deal next hand"></button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="dlg-rules" aria-labelledby="rules-title">
+      <div class="dialog__head">
+        <h2 id="rules-title">How to play</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="dialog__body">
+        <ol class="rankings" id="rankings"></ol>
+        <div class="how-to">
+          <h3>The goal</h3>
+          <p>Win everyone's chips. Make the best five-card hand from your two hole cards and the five community cards — or make everyone else fold.</p>
+          <h3>A hand of Hold'em</h3>
+          <ul>
+            <li><b>Blinds</b> — the two players left of the dealer button post forced bets.</li>
+            <li><b>Pre-flop</b> — everyone gets two private cards, then a betting round.</li>
+            <li><b>Flop, Turn, River</b> — three, then one, then one community card, each followed by betting.</li>
+            <li><b>Showdown</b> — remaining players reveal; the best hand wins the pot.</li>
+          </ul>
+          <h3>Your options</h3>
+          <ul>
+            <li><b>Check</b> — pass when there's no bet to you.</li>
+            <li><b>Call</b> — match the current bet.</li>
+            <li><b>Bet / Raise</b> — put in more; a raise must be at least the size of the previous bet or raise.</li>
+            <li><b>Fold</b> — give up the hand.</li>
+            <li><b>All-in</b> — bet everything. You can only win from each player what you put in; extra goes to side pots.</li>
+          </ul>
+          <h3>Tips</h3>
+          <ul>
+            <li>Play fewer, stronger hands from early position; open up on the button.</li>
+            <li>Compare your odds of winning with the price of calling (the pot odds).</li>
+            <li>When your stack drops below ~12 big blinds, going all-in or folding is often best.</li>
+          </ul>
+          <h3>Keyboard</h3>
+          <p><b>F</b> fold · <b>C</b> check/call · <b>R</b> bet/raise · <b>A</b> all-in · <b>Enter</b> confirm · <b>Esc</b> cancel · <b>↑/↓</b> adjust bet</p>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="dlg-stats" aria-labelledby="stats-title">
+      <div class="dialog__head">
+        <h2 id="stats-title">Statistics</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="dialog__body">
+        <div class="stats-grid" id="stats-grid"></div>
+        <p style="text-align: center; margin: 16px 0 0">
+          <button class="link-btn" id="btn-reset-stats">Reset statistics</button>
+        </p>
+      </div>
+    </dialog>
+
+    <dialog id="dlg-history" aria-labelledby="history-title">
+      <div class="dialog__head">
+        <h2 id="history-title">Hand history</h2>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div class="dialog__body">
+        <div class="history" id="history"></div>
+      </div>
+    </dialog>
+
+    <dialog id="dlg-gameover" aria-labelledby="gameover-title">
+      <div class="dialog__body gameover">
+        <div class="gameover__trophy" id="gameover-icon">🏆</div>
+        <h2 id="gameover-title">You won!</h2>
+        <p id="gameover-text"></p>
+        <div class="stats-grid" id="gameover-stats"></div>
+        <div class="dialog-actions">
+          <button class="btn btn--primary btn--lg btn--block" id="btn-again">Play again</button>
+          <button class="btn btn--ghost btn--block" id="btn-gameover-lobby">Back to lobby</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="dlg-confirm" aria-labelledby="confirm-title">
+      <div class="dialog__head">
+        <h2 id="confirm-title">Are you sure?</h2>
+      </div>
+      <div class="dialog__body">
+        <p id="confirm-text" style="margin: 0 0 16px; color: var(--muted)"></p>
+        <div class="dialog-actions">
+          <button class="btn btn--primary btn--block" id="confirm-yes">Yes</button>
+          <button class="btn btn--ghost btn--block" id="confirm-no">Cancel</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <noscript>
+      <p style="padding: 24px; text-align: center">This game needs JavaScript to run.</p>
+    </noscript>
+  </body>
+</html>
